@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Cocos2d-x
+cocos2d
+proj.*
+.cocos*
+
+# emacs
+\#*
+*\~
