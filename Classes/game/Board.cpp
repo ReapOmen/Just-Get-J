@@ -17,7 +17,7 @@ Board::Board()
         _grid[i] = vector<char>(GRID_SIZE);
         _visited[i] = vector<bool>(GRID_SIZE);
         for (int j = 0; j < GRID_SIZE; ++j) {
-            _grid[i][j] = RandomHelper::random_int(0, 2) + 'a';
+            _grid[i][j] = getRandomChar();
         }
     }
 }
@@ -42,11 +42,11 @@ bool Board::click(int i, int j) {
                 if (pair->first == i && pair->second == j) {
                     _grid[i][j] += 1;
                 } else {
-                    _grid[pair->first][pair->second] =
-                        RandomHelper::random_int(0, 2) + 'a';
+                    _grid[pair->first][pair->second] = '\0';
                 }
                 _selected.erase(pair);
             }
+            dropLetters();
             return true;
         }
     }
@@ -60,6 +60,10 @@ void Board::print() const {
         }
         cout << endl;
     }
+}
+
+char Board::getRandomChar() {
+    return RandomHelper::random_int(0, 2) + 'a';
 }
 
 void Board::fill(int i, int j, char c) {
@@ -81,6 +85,39 @@ void Board::resetVisited() {
     for (int i = 0; i < GRID_SIZE; ++i) {
         for (int j = 0; j < GRID_SIZE; ++j) {
             _visited[i][j] = false;
+        }
+    }
+}
+
+void Board::dropLetters() {
+    for (int j = 0; j < GRID_SIZE; ++j) {
+        for (int i = GRID_SIZE - 1; i >= 0; --i) {
+            if (_grid[i][j] != '\0') {
+                moveUntilBoundary(i, j);
+            }
+        }
+    }
+    fillWithRandom();
+}
+
+void Board::moveUntilBoundary(int i, int j) {
+    while (i + 1 < GRID_SIZE) {
+        if (_grid[i+1][j] == '\0') {
+            _grid[i+1][j] = _grid[i][j];
+            _grid[i][j] = '\0';
+            ++i;
+        } else {
+            return;
+        }
+    }
+}
+
+void Board::fillWithRandom() {
+    for (int i = 0; i < GRID_SIZE; ++i) {
+        for (int j = 0; j < GRID_SIZE; ++j) {
+            if (_grid[i][j] == '\0') {
+                _grid[i][j] = getRandomChar();
+            }
         }
     }
 }

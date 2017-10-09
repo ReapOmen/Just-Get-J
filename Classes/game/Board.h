@@ -25,9 +25,13 @@ private:
     std::vector<std::vector<bool>> _visited;
     std::vector<std::pair<int, int>> _selected;
 
+    char getRandomChar();
     void fill(int i, int j, char c);
     bool inRange(int i, int j) const;
     void resetVisited();
+    void dropLetters();
+    void moveUntilBoundary(int i, int j);
+    void fillWithRandom();
 };
 
 #endif // __BOARD_H__
