@@ -22,14 +22,14 @@ private:
     std::unique_ptr<Board> _board;
     cocos2d::ui::Layout* _layout;
     std::vector<std::vector<cocos2d::ui::Button*>> _buttons;
-    std::vector<cocos2d::ui::Button*> _scaled;
+    std::vector<cocos2d::ui::Button*> _highlighted;
     bool _selected;
 
     void setupLayout();
     void createGridOfButtons();
     cocos2d::ui::Button* createButton(int i, int j, char c);
     void gridItemOnClick(Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
-    void selectAndScale(cocos2d::ui::Button* button);
+    void selectAndHighlight(cocos2d::ui::Button* button);
     void refreshGrid();
 };
 

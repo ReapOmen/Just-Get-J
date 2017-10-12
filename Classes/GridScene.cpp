@@ -20,7 +20,7 @@ bool GridScene::init() {
 
     initWithPhysics();
     _board = unique_ptr<Board>(new Board());
-    _scaled = vector<Button*>(0);
+    _highlighted = vector<Button*>(0);
     _selected = false;
 
     setupLayout();
@@ -92,33 +92,33 @@ void GridScene::gridItemOnClick(Ref* pSender, ui::Widget::TouchEventType type) {
         // we only bind this method to Buttons so this cast is always safe
         Button* b = dynamic_cast<Button*>(pSender);
         if (!_selected) {
-            selectAndScale(b);
+            selectAndHighlight(b);
         } else {
             auto result = _board->click(b->getName()[0] - '0',
                                         b->getName()[1] - '0');
-            for (auto it = _scaled.begin(); it != _scaled.end();) {
-                (*it)->setScale(1.0f);
-                it = _scaled.erase(it);
+            for (auto it = _highlighted.begin(); it != _highlighted.end();) {
+                (*it)->setHighlighted(false);
+                it = _highlighted.erase(it);
             }
             if (result) {
                 refreshGrid();
                 _selected = false;
             } else {
-                selectAndScale(b);
+                selectAndHighlight(b);
             }
         }
     }
 }
 
-void GridScene::selectAndScale(Button* b) {
+void GridScene::selectAndHighlight(Button* b) {
     auto result = _board->select(b->getName()[0] - '0',
                                  b->getName()[1] - '0');
     if (result.size() > 1) {
         _selected = true;
         for (const auto& pair : result) {
             auto button = _buttons[pair.first][pair.second];
-            _scaled.push_back(button);
-            button->setScale(1.1f);
+            _highlighted.push_back(button);
+            button->setHighlighted(true);
         }
     }
 }
