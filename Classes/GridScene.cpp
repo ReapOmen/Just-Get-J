@@ -9,8 +9,7 @@ using std::unique_ptr;
 using ui::Button;
 using ui::Layout;
 
-Scene* GridScene::createScene()
-{
+Scene* GridScene::createScene() {
     return GridScene::create();
 }
 
@@ -19,15 +18,46 @@ bool GridScene::init() {
         return false;
     }
 
+    initWithPhysics();
     _board = unique_ptr<Board>(new Board());
     _scaled = vector<Button*>(0);
     _selected = false;
 
+    setupLayout();
+    createGridOfButtons();
+
+    // set up the content size of the layout
+    auto buttonSize = _buttons[0][0]->getContentSize();
+    auto layoutSize = Size(buttonSize.width * _buttons.size(),
+                           buttonSize.height * _buttons.size());
+    _layout->setContentSize(layoutSize);
+
+    // set up an edge at the bottom of the layout
+    // to stop buttons from falling
+    auto layoutPB = PhysicsBody::createEdgeSegment(
+        Vec2(-layoutSize.width / 2.0f, -layoutSize.height / 2.0f),
+        Vec2(layoutSize.width / 2.0f, -layoutSize.height / 2.0f)
+    );
+    layoutPB->setDynamic(false);
+    _layout->setPhysicsBody(layoutPB);
+
+    addChild(_layout);
+
+    return true;
+}
+
+void GridScene::setupLayout() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
-
     _layout = Layout::create();
-    _layout->setLayoutType(Layout::Type::RELATIVE);
+    _layout->setLayoutType(Layout::Type::ABSOLUTE);
+    _layout->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    _layout->setPosition(Vec2(visibleSize.width / 2,
+                              visibleSize.height / 2));
+    _layout->setBackGroundColorType(Layout::BackGroundColorType::SOLID);
+    _layout->setBackGroundColor(Color3B::GRAY);
+}
 
+void GridScene::createGridOfButtons() {
     auto grid = _board->getGrid();
     auto gridSize = grid.size();
     _buttons = vector<vector<Button*>>(gridSize);
@@ -35,19 +65,14 @@ bool GridScene::init() {
         _buttons[i] = vector<Button*>();
         for (size_t j = 0; j < gridSize; ++j) {
             auto button = createButton(i, j, grid[i][j]);
+            auto btnSize = button->getContentSize();
+            button->setPhysicsBody(PhysicsBody::createBox(btnSize));
             _layout->addChild(button);
-            button->setLayoutParameter(getLayoutParam(i, j));
+            float x = j * btnSize.width + btnSize.width / 2.0f;
+            float y = (gridSize - i - 1) * btnSize.height + btnSize.height / 2.0f;
+            button->setPosition(Vec2(x, y));
         }
     }
-
-    auto childSize = _buttons[0][0]->getContentSize();
-    _layout->setContentSize(Size(childSize.width * grid.size(),
-                                 childSize.height * grid.size()));
-    _layout->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
-    _layout->setPosition(Vec2 (visibleSize.width / 2, visibleSize.height / 2));
-    addChild(_layout);
-
-    return true;
 }
 
 Button* GridScene::createButton(int i, int j, char c) {
@@ -60,37 +85,6 @@ Button* GridScene::createButton(int i, int j, char c) {
         });
     _buttons[i].push_back(button);
     return button;
-}
-
-ui::LayoutParameter* GridScene::getLayoutParam(int i, int j) {
-    ui::RelativeLayoutParameter* rlp = ui::RelativeLayoutParameter::create();
-    rlp->setRelativeName(to_string(i) + to_string(j));
-    // the top left character of the grid will be placed in the top left
-    // corner of the layout
-    if (i == 0 && j == 0) {
-        rlp->setAlign(
-            ui::RelativeLayoutParameter::RelativeAlign::PARENT_TOP_LEFT
-        );
-        // first element of any line except line 0
-    } else if (j == 0) {
-        // we set it relative to the one above
-        // (so element (1, 0) is relative to (0, 0))
-        rlp->setRelativeToWidgetName(to_string(i - 1) +
-                                     to_string(0));
-        // we want it aligned below the one above
-        rlp->setAlign(
-            ui::RelativeLayoutParameter::RelativeAlign::LOCATION_BELOW_CENTER
-        );
-        // any element that is not the top left corner
-        // and not on the first column
-    } else {
-        rlp->setRelativeToWidgetName(to_string(i) +
-                                     to_string(j - 1));
-        rlp->setAlign(
-            ui::RelativeLayoutParameter::RelativeAlign::LOCATION_RIGHT_OF_CENTER
-        );
-    }
-    return rlp;
 }
 
 void GridScene::gridItemOnClick(Ref* pSender, ui::Widget::TouchEventType type) {
