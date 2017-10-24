@@ -8,11 +8,15 @@ using std::vector;
 using std::pair;
 using std::cout;
 using std::endl;
+using std::map;
+using std::make_pair;
 
 Board::Board()
     : _grid(GRID_SIZE),
       _visited(GRID_SIZE),
-      _selected(0) {
+      _selected(0),
+      _newPos(),
+      _newValues(0) {
     for (int i = 0; i < GRID_SIZE; ++i) {
         _grid[i] = vector<char>(GRID_SIZE);
         _visited[i] = vector<bool>(GRID_SIZE);
@@ -28,11 +32,12 @@ const vector<pair<int, int>>& Board::select(int i, int j) {
         fill(i, j, _grid[i][j]);
         resetVisited();
     }
+
     return _selected;
 }
 
 bool Board::click(int i, int j) {
-    pair<int, int> pair = std::make_pair(i, j);
+    pair<int, int> pair = make_pair(i, j);
     if (_selected.size() > 1) {
         auto selection = std::find(_selected.begin(),
                                    _selected.end(),
@@ -54,12 +59,15 @@ bool Board::click(int i, int j) {
 }
 
 void Board::print() const {
+    log("-----------------");
     for (int i = 0; i < GRID_SIZE; ++i) {
+        std::string s = "";
         for (int j = 0; j < GRID_SIZE; ++j) {
-            cout << _grid[i][j] << " ";
+            s.append(1, _grid[i][j]).append(" ");
         }
-        cout << endl;
+        log ("%s", s.c_str());
     }
+    log("-----------------");
 }
 
 char Board::getRandomChar() {
@@ -69,7 +77,7 @@ char Board::getRandomChar() {
 void Board::fill(int i, int j, char c) {
     if (inRange(i, j) && _grid[i][j] == c && !_visited[i][j]) {
         _visited[i][j] = true;
-        _selected.push_back(std::make_pair(i, j));
+        _selected.push_back(make_pair(i, j));
         fill(i + 1, j, c);
         fill(i - 1, j, c);
         fill(i, j + 1, c);
@@ -90,6 +98,7 @@ void Board::resetVisited() {
 }
 
 void Board::dropLetters() {
+    _newPos = vector<pair<ints, ints>>();
     for (int j = 0; j < GRID_SIZE; ++j) {
         for (int i = GRID_SIZE - 1; i >= 0; --i) {
             if (_grid[i][j] != '\0') {
@@ -101,21 +110,28 @@ void Board::dropLetters() {
 }
 
 void Board::moveUntilBoundary(int i, int j) {
-    while (i + 1 < GRID_SIZE) {
-        if (_grid[i+1][j] == '\0') {
-            _grid[i+1][j] = _grid[i][j];
-            _grid[i][j] = '\0';
-            ++i;
+    int i2 = i;
+    while (i2 + 1 < GRID_SIZE) {
+        if (_grid[i2 + 1][j] == '\0') {
+            _grid[i2 + 1][j] = _grid[i2][j];
+            _grid[i2][j] = '\0';
+            ++i2;
         } else {
-            return;
+            break;
         }
     }
+    if (i2 != i) {
+        _newPos.push_back(make_pair(make_pair(i, j), make_pair(i2, j)));
+    }
+
 }
 
 void Board::fillWithRandom() {
-    for (int i = 0; i < GRID_SIZE; ++i) {
+    _newValues = vector<pair<int, int>>(0);
+    for (int i = GRID_SIZE - 1; i >= 0; --i) {
         for (int j = 0; j < GRID_SIZE; ++j) {
             if (_grid[i][j] == '\0') {
+                _newValues.push_back(make_pair(i, j));
                 _grid[i][j] = getRandomChar();
             }
         }

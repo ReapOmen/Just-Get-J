@@ -18,7 +18,6 @@ bool GridScene::init() {
         return false;
     }
 
-    initWithPhysics();
     _board = unique_ptr<Board>(new Board());
     _highlighted = vector<Button*>(0);
     _selected = false;
@@ -31,15 +30,6 @@ bool GridScene::init() {
     auto layoutSize = Size(buttonSize.width * _buttons.size(),
                            buttonSize.height * _buttons.size());
     _layout->setContentSize(layoutSize);
-
-    // set up an edge at the bottom of the layout
-    // to stop buttons from falling
-    auto layoutPB = PhysicsBody::createEdgeSegment(
-        Vec2(-layoutSize.width / 2.0f, -layoutSize.height / 2.0f),
-        Vec2(layoutSize.width / 2.0f, -layoutSize.height / 2.0f)
-    );
-    layoutPB->setDynamic(false);
-    _layout->setPhysicsBody(layoutPB);
 
     addChild(_layout);
 
@@ -65,9 +55,8 @@ void GridScene::createGridOfButtons() {
         _buttons[i] = vector<Button*>();
         for (size_t j = 0; j < gridSize; ++j) {
             auto button = createButton(i, j, grid[i][j]);
+            _buttons[i].push_back(button);
             auto btnSize = button->getContentSize();
-            button->setPhysicsBody(PhysicsBody::createBox(btnSize));
-            _layout->addChild(button);
             float x = j * btnSize.width + btnSize.width / 2.0f;
             float y = (gridSize - i - 1) * btnSize.height + btnSize.height / 2.0f;
             button->setPosition(Vec2(x, y));
@@ -83,7 +72,7 @@ Button* GridScene::createButton(int i, int j, char c) {
     button->addTouchEventListener([&](Ref* ref, ui::Widget::TouchEventType te) {
             gridItemOnClick(ref, te);
         });
-    _buttons[i].push_back(button);
+    _layout->addChild(button);
     return button;
 }
 
@@ -98,6 +87,9 @@ void GridScene::gridItemOnClick(Ref* pSender, ui::Widget::TouchEventType type) {
                                         b->getName()[1] - '0');
             for (auto it = _highlighted.begin(); it != _highlighted.end();) {
                 (*it)->setHighlighted(false);
+                if (result && (*it)->getName() != b->getName()) {
+                    _layout->removeChildByName((*it)->getName());
+                }
                 it = _highlighted.erase(it);
             }
             if (result) {
@@ -125,6 +117,39 @@ void GridScene::selectAndHighlight(Button* b) {
 
 void GridScene::refreshGrid() {
     auto grid = _board->getGrid();
+    auto newPositions = _board->getNewPositions();
+    for (auto entry : newPositions) {
+        int i = entry.first.first;
+        int j = entry.first.second;
+        int i2 = entry.second.first;
+        int j2 = entry.second.second;
+        _buttons[i2][j2] = _buttons[i][j];
+        _buttons[i2][j2]->setName(to_string(i2) + to_string(j2));
+        auto btnSize = _buttons[i2][j2]->getContentSize();
+        float x = j2 * btnSize.width + btnSize.width / 2.0f;
+        float y = (grid.size() - i2 - 1) * btnSize.height + btnSize.height / 2.0f;
+        _buttons[i2][j2]->runAction(MoveTo::create(1.0f, Vec2(x, y)));
+    }
+    auto newValues = _board->getNewValues();
+    vector<int> vals(grid.size());
+    for (auto pair : newValues) {
+        ++vals[pair.second];
+    }
+    for (auto pair : newValues) {
+        int i = pair.first;
+        int j = pair.second;
+        auto button = createButton(i, j, grid[i][j]);
+        _buttons[i][j] = button;
+        auto btnSize = button->getContentSize();
+        float x = j * btnSize.width + btnSize.width / 2.0f;
+        float y = (grid.size() - i - 1) * btnSize.height + btnSize.height / 2.0f;
+        y += _layout->getContentSize().height -
+            btnSize.height * (grid.size() - vals[j]);
+        button->setPosition(Vec2(x, y));
+        auto act = MoveTo::create(1.0f, Vec2(x, (grid.size() - i - 1) * btnSize.height + btnSize.height / 2.0f));
+
+        button->runAction(act);
+    }
     for (size_t i = 0; i < grid.size(); ++i) {
         for (size_t j = 0; j < grid.size(); ++j) {
             _buttons[i][j]->loadTextureNormal("button_" +

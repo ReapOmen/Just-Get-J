@@ -31,6 +31,7 @@ private:
     void gridItemOnClick(Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
     void selectAndHighlight(cocos2d::ui::Button* button);
     void refreshGrid();
+    bool onContactBegin(const cocos2d::PhysicsContact& contact);
 };
 
 #endif // __GRID_SCENE_H__
