@@ -128,7 +128,7 @@ void GridScene::refreshGrid() {
         auto btnSize = _buttons[i2][j2]->getContentSize();
         float x = j2 * btnSize.width + btnSize.width / 2.0f;
         float y = (grid.size() - i2 - 1) * btnSize.height + btnSize.height / 2.0f;
-        _buttons[i2][j2]->runAction(MoveTo::create(1.0f, Vec2(x, y)));
+        _buttons[i2][j2]->runAction(MoveTo::create(0.15f, Vec2(x, y)));
     }
     auto newValues = _board->getNewValues();
     vector<int> vals(grid.size());
@@ -142,12 +142,13 @@ void GridScene::refreshGrid() {
         _buttons[i][j] = button;
         auto btnSize = button->getContentSize();
         float x = j * btnSize.width + btnSize.width / 2.0f;
-        float y = (grid.size() - i - 1) * btnSize.height + btnSize.height / 2.0f;
-        y += _layout->getContentSize().height -
-            btnSize.height * (grid.size() - vals[j]);
+        float y = _layout->getContentSize().height +
+            btnSize.height * (vals[j] - i) + btnSize.height / 2;
         button->setPosition(Vec2(x, y));
-        auto act = MoveTo::create(1.0f, Vec2(x, (grid.size() - i - 1) * btnSize.height + btnSize.height / 2.0f));
-
+        auto act = MoveTo::create(0.15f,
+                                  Vec2(x, (grid.size() - i - 1) *
+                                          btnSize.height +
+                                          btnSize.height / 2.0f));
         button->runAction(act);
     }
     for (size_t i = 0; i < grid.size(); ++i) {
