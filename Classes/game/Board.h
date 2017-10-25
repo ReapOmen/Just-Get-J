@@ -1,18 +1,11 @@
+
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
 #include <vector>
 #include <map>
 
-using ints = std::pair<int, int>;
-
-class pairComp {
-public:
-
-    bool operator()(const ints& p1, const ints& p2) {
-        return p1.first > p2.first && p1.second > p2.second;
-    }
-};
+using Coord = std::pair<int, int>;
 
 class Board {
 public:
@@ -23,16 +16,16 @@ public:
 
     ~Board() = default;
 
-    const std::vector<std::pair<int, int>>& select(int i, int j);
+    const std::vector<Coord>& select(int i, int j);
 
     bool click(int i, int j);
 
     const std::vector<std::vector<char>>& getGrid() const { return _grid; }
 
-    const std::vector<std::pair<ints, ints>>& getNewPositions()
+    const std::vector<std::pair<Coord, Coord>>& getNewPositions()
         const { return _newPos; }
 
-    const std::vector<std::pair<int, int>>& getNewValues()
+    const std::vector<Coord>& getNewValues()
         const { return _newValues; }
 
     void print() const;
@@ -40,9 +33,9 @@ public:
 private:
     std::vector<std::vector<char>> _grid;
     std::vector<std::vector<bool>> _visited;
-    std::vector<std::pair<int, int>> _selected;
-    std::vector<std::pair<ints, ints>> _newPos;
-    std::vector<std::pair<int, int>> _newValues;
+    std::vector<Coord> _selected;
+    std::vector<std::pair<Coord, Coord>> _newPos;
+    std::vector<Coord> _newValues;
 
     char getRandomChar();
     void fill(int i, int j, char c);

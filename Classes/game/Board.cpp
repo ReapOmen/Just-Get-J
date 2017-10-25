@@ -5,10 +5,10 @@
 
 USING_NS_CC;
 using std::vector;
-using std::pair;
 using std::cout;
 using std::endl;
 using std::map;
+using std::pair;
 using std::make_pair;
 
 Board::Board()
@@ -26,8 +26,8 @@ Board::Board()
     }
 }
 
-const vector<pair<int, int>>& Board::select(int i, int j) {
-    _selected = vector<pair<int, int>>(0);
+const vector<Coord>& Board::select(int i, int j) {
+    _selected = vector<Coord>(0);
     if (i >= 0 && i < GRID_SIZE && j >= 0 && j < GRID_SIZE) {
         fill(i, j, _grid[i][j]);
         resetVisited();
@@ -37,7 +37,7 @@ const vector<pair<int, int>>& Board::select(int i, int j) {
 }
 
 bool Board::click(int i, int j) {
-    pair<int, int> pair = make_pair(i, j);
+    auto pair = make_pair(i, j);
     if (_selected.size() > 1) {
         auto selection = std::find(_selected.begin(),
                                    _selected.end(),
@@ -98,7 +98,7 @@ void Board::resetVisited() {
 }
 
 void Board::dropLetters() {
-    _newPos = vector<pair<ints, ints>>();
+    _newPos = vector<pair<Coord, Coord>>();
     for (int j = 0; j < GRID_SIZE; ++j) {
         for (int i = GRID_SIZE - 1; i >= 0; --i) {
             if (_grid[i][j] != '\0') {
@@ -127,7 +127,7 @@ void Board::moveUntilBoundary(int i, int j) {
 }
 
 void Board::fillWithRandom() {
-    _newValues = vector<pair<int, int>>(0);
+    _newValues = vector<Coord>(0);
     for (int i = GRID_SIZE - 1; i >= 0; --i) {
         for (int j = 0; j < GRID_SIZE; ++j) {
             if (_grid[i][j] == '\0') {
