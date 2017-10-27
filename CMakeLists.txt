@@ -136,6 +136,8 @@ set(GAME_HEADERS
   Classes/AppDelegate.h
   Classes/GridScene.h
   Classes/game/Board.h
+  Classes/events/IEventListener.h
+  Classes/events/EventGenerator.h
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 

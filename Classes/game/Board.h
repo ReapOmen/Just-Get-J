@@ -4,11 +4,16 @@
 
 #include <vector>
 #include <map>
+#include <string>
+#include "events/EventGenerator.h"
 
 using Coord = std::pair<int, int>;
 
-class Board {
+class Board : public EventGenerator {
+
 public:
+
+    static const std::string M_GAME_OVER;
 
     static const int GRID_SIZE = 5;
 
@@ -31,6 +36,7 @@ public:
     void print() const;
 
 private:
+
     std::vector<std::vector<char>> _grid;
     std::vector<std::vector<bool>> _visited;
     std::vector<Coord> _selected;
@@ -44,6 +50,8 @@ private:
     void dropLetters();
     void moveUntilBoundary(int i, int j);
     void fillWithRandom();
+    int countMovesLeft(int i, int j, char c);
+    void checkGameOver();
 };
 
 #endif // __BOARD_H__
