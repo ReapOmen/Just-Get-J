@@ -11,6 +11,8 @@ using std::map;
 using std::pair;
 using std::make_pair;
 
+const std::string Board::M_GAME_OVER = "1:GameOver";
+
 Board::Board()
     : _grid(GRID_SIZE),
       _visited(GRID_SIZE),
@@ -32,7 +34,6 @@ const vector<Coord>& Board::select(int i, int j) {
         fill(i, j, _grid[i][j]);
         resetVisited();
     }
-
     return _selected;
 }
 
@@ -52,6 +53,7 @@ bool Board::click(int i, int j) {
                 _selected.erase(pair);
             }
             dropLetters();
+            checkGameOver();
             return true;
         }
     }
@@ -135,5 +137,31 @@ void Board::fillWithRandom() {
                 _grid[i][j] = getRandomChar();
             }
         }
+    }
+}
+
+int Board::countMovesLeft(int i, int j, char c) {
+    int res = 0;
+    if (inRange(i, j) && !_visited[i][j] && c == _grid[i][j]) {
+        _visited[i][j] = true;
+        res += 1;
+        res += countMovesLeft(i + 1, j, c);
+        res += countMovesLeft(i - 1, j, c);
+        res += countMovesLeft(i, j + 1, c);
+        res += countMovesLeft(i, j - 1, c);
+    }
+    return res;
+}
+
+void Board::checkGameOver() {
+    bool gameOver = true;
+    for (int i = 0; i < GRID_SIZE && gameOver; ++i) {
+        for (int j = 0; j < GRID_SIZE && gameOver; ++j) {
+            gameOver = countMovesLeft(i, j, _grid[i][j]) == 1;
+        }
+    }
+    resetVisited();
+    if (gameOver) {
+        notifyAll(M_GAME_OVER);
     }
 }

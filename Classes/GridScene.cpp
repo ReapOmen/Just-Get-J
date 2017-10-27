@@ -19,6 +19,7 @@ bool GridScene::init() {
     }
 
     _board = unique_ptr<Board>(new Board());
+    _board->addListener(this);
     _highlighted = vector<Button*>(0);
     _selected = false;
 
@@ -34,6 +35,12 @@ bool GridScene::init() {
     addChild(_layout);
 
     return true;
+}
+
+void GridScene::notify(const std::string& message) {
+    if (message == Board::M_GAME_OVER) {
+        onGameOver();
+    }
 }
 
 void GridScene::setupLayout() {
@@ -157,4 +164,22 @@ void GridScene::refreshGrid() {
                                               string(1, grid[i][j]) + ".png");
         }
     }
+}
+
+void GridScene::onGameOver() {
+    auto layer = LayerColor::create(Color4B(0, 0, 0, 180));
+    for (int i = 0; i < _buttons.size(); ++i) {
+        for (int j = 0; j < _buttons.size(); ++j) {
+            _buttons[i][j]->setEnabled(false);
+        }
+    }
+    addChild(layer);
+    auto retryButton = Button::create("button_retry.png");
+    retryButton->addTouchEventListener([&](Ref* ref, ui::Widget::TouchEventType te) {
+            Director::getInstance()->replaceScene(GridScene::createScene());
+        });
+    retryButton->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    addChild(retryButton);
+    retryButton->setPosition(_layout->getPosition());
+
 }
